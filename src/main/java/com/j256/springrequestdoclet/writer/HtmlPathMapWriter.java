@@ -1,9 +1,8 @@
 package com.j256.springrequestdoclet.writer;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 	}
 
 	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String title, File file) throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(file));
+		PrintWriter out = new PrintWriter(file);
 		try {
 			writePathSummary(endPointMap, title, out);
 		} finally {
@@ -50,19 +49,17 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		}
 	}
 
-	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String title, BufferedWriter out)
-			throws IOException {
+	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String title, PrintWriter out) {
 
 		writeHeader(title, out);
 
 		List<String> pathList = new ArrayList<String>(endPointMap.keySet());
 		Collections.sort(pathList);
-		writeLine(out, "<table>");
-		writeLine(out,
-				"<tr><th rowspan=\"2\"> Path </th><th colspan=\"3\"> Request Narrowing </th>"
-						+ "<th rowspan=\"2\"> Class </th><th rowspan=\"2\"> Method </th>"
-						+ "<th rowspan=\"2\"> Description </th></tr>");
-		writeLine(out, "<tr><th> GET/POST </th><th> Param(s) </th><th> Other </th>");
+		out.println("<table>");
+		out.println("<tr><th rowspan='2'> Path </th><th colspan='3'> Request Narrowing </th>"
+				+ "<th rowspan='2'> Class </th><th rowspan='2'> Method </th>"
+				+ "<th rowspan='2'> Description </th></tr>");
+		out.println("<tr><th> GET/POST </th><th> Param(s) </th><th> Other </th>");
 		for (String path : pathList) {
 
 			// maybe we should break down the paths by element if there are a lot of them
@@ -73,7 +70,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 			for (EndPoint endPoint : endPoints) {
 				out.write("<tr>");
 				if (first) {
-					out.write("<td rowspan=\"" + endPoints.size() + "\"> " + path + "</td>");
+					out.write("<td rowspan='" + endPoints.size() + "'> " + htmlEscape(path) + "</td>");
 					first = false;
 				}
 				out.write("<td> ");
@@ -109,22 +106,22 @@ public class HtmlPathMapWriter implements PathMapWriter {
 				out.write("</td><td> ");
 				ClassInfo classInfo = endPoint.getClassInfo();
 				String classFileName = javaClassNameToPath(classInfo);
-				out.write("<a href=\"" + classFileName + ".html\">" + htmlEscape(classInfo.getClassName()) + "</a>");
+				out.write("<a href='" + classFileName + ".html'>" + htmlEscape(classInfo.getClassName()) + "</a>");
 				out.write("</td><td> ");
 				out.write(htmlEscape(methodInfo.getJavaMethodName()) + "(...)");
 				out.write("</td><td> ");
-				writeIfNotNull(out, methodInfo.getJavadoc());
-				writeLine(out, "</td></tr>");
+				writeIfNotNull(out, methodInfo.getJavadoc(), "&nbsp;");
+				out.println("</td></tr>");
 			}
 		}
 
-		writeLine(out, "</table>");
+		out.println("</table>");
 		writeTrailer(out, null);
 	}
 
 	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String title, File file)
 			throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(file));
+		PrintWriter out = new PrintWriter(file);
 		try {
 			writeClassSummary(endPointMap, title, out);
 		} finally {
@@ -132,8 +129,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		}
 	}
 
-	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String title, BufferedWriter out)
-			throws IOException {
+	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String title, PrintWriter out) {
 
 		writeHeader(title, out);
 
@@ -155,12 +151,11 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		List<ClassInfo> classInfoList = new ArrayList<ClassInfo>(classInfoMap.keySet());
 		Collections.sort(classInfoList);
 
-		writeLine(out, "<table>");
-		writeLine(out, "<tr><th> Class </th><th> Paths </th><th> Description </th></tr>");
+		out.println("<table>");
+		out.println("<tr><th> Class </th><th> Paths </th><th> Description </th></tr>");
 		for (ClassInfo classInfo : classInfoList) {
 			String classPath = javaClassNameToPath(classInfo);
-			out.write(
-					"<tr><td><a href=\"" + classPath + ".html\">" + htmlEscape(classInfo.getClassName()) + "</a></td>");
+			out.write("<tr><td><a href='" + classPath + ".html'>" + htmlEscape(classInfo.getClassName()) + "</a></td>");
 			out.write("<td>");
 			boolean first = true;
 			for (String path : classInfoMap.get(classInfo)) {
@@ -171,11 +166,11 @@ public class HtmlPathMapWriter implements PathMapWriter {
 				}
 				out.write(path);
 			}
-			writeLine(out, "</td><td>");
-			writeIfNotNull(out, htmlEscape(classInfo.getJavaDocFirstSentence()));
-			writeLine(out, "</td></tr>");
+			out.println("</td><td>");
+			writeIfNotNull(out, htmlEscape(classInfo.getJavaDocFirstSentence()), "&nbsp;");
+			out.println("</td></tr>");
 		}
-		writeLine(out, "</table>");
+		out.println("</table>");
 		writeTrailer(out, null);
 	}
 
@@ -202,7 +197,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 
 	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints) throws IOException {
 		String classPath = javaClassNameToPath(classInfo);
-		BufferedWriter out = new BufferedWriter(new FileWriter(classPath + ".html"));
+		PrintWriter out = new PrintWriter(classPath + ".html");
 		try {
 			writeClassFile(classInfo, endPoints, out);
 		} finally {
@@ -210,7 +205,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		}
 	}
 
-	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints, BufferedWriter out) throws IOException {
+	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints, PrintWriter out) {
 
 		writeHeader("Class " + classInfo.getClassName(), out);
 
@@ -226,7 +221,8 @@ public class HtmlPathMapWriter implements PathMapWriter {
 
 		String javaDoc = classInfo.getJavaDoc();
 		if (javaDoc != null && !javaDoc.isEmpty()) {
-			writeLine(out, "<p> ", javaDoc, "</p>");
+			// NOTE: javadoc might have html which we hope is ok
+			out.println("<p> " + javaDoc + "</p>");
 		}
 
 		writeMethodInfo(out, methodInfoList, methodPathMap);
@@ -234,19 +230,19 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		writeTrailer(out, "../");
 	}
 
-	private void writeMethodInfo(BufferedWriter out, List<MethodInfo> methodInfoList,
-			Map<MethodInfo, String> methodPathMap) throws IOException {
-		writeLine(out, "<table>");
-		writeLine(out, "<tr><th colspan=\"7\"> Method Information </th></tr>");
-		writeLine(out, "<tr><th rowspan=\"2\"> Method </th><th colspan=\"5\"> Request Narrowing </th>"
-				+ "<th rowspan=\"2\"> Description </th></tr>");
-		writeLine(out, "<tr><th> Path(s) </th><th> GET/POST </th><th> Params </th><th> Headers </th>"
+	private void writeMethodInfo(PrintWriter out, List<MethodInfo> methodInfoList,
+			Map<MethodInfo, String> methodPathMap) {
+		out.println("<table>");
+		out.println("<tr><th colspan='7'> Method Information </th></tr>");
+		out.println("<tr><th rowspan='2'> Method </th><th colspan='5'> Request Narrowing </th>"
+				+ "<th rowspan='2'> Description </th></tr>");
+		out.println("<tr><th> Path(s) </th><th> GET/POST </th><th> Params </th><th> Headers </th>"
 				+ "<th> Content Types </th></tr>");
 		for (MethodInfo methodInfo : methodInfoList) {
 			out.write("<tr><td>");
 			out.write(htmlEscape(methodInfo.getJavaMethodName()) + "(...)");
 			out.write("</td><td>");
-			writeIfNotNull(out, methodPathMap.get(methodInfo));
+			writeIfNotNull(out, methodPathMap.get(methodInfo), "&nbsp;");
 			out.write("</td><td>");
 			String[] methods = methodInfo.getMethods();
 			printArray(out, null, methods);
@@ -272,16 +268,16 @@ public class HtmlPathMapWriter implements PathMapWriter {
 				firstOther = false;
 			}
 			out.write("</td><td> ");
-			writeIfNotNull(out, methodInfo.getJavadoc());
-			writeLine(out, "</td></tr>");
+			writeIfNotNull(out, methodInfo.getJavadoc(), "&nbsp;");
+			out.println("</td></tr>");
 		}
-		writeLine(out, "</table><br />");
+		out.println("</table><br />");
 	}
 
-	private void writeParamInfo(BufferedWriter out, List<MethodInfo> methodInfoList) throws IOException {
-		writeLine(out, "<table>");
-		writeLine(out, "<tr><th colspan=\"7\"> Method Params </th></tr>");
-		writeLine(out, "<tr><th> Method </th><th> Param Name </th><th> Request </th><th> Type </th>"
+	private void writeParamInfo(PrintWriter out, List<MethodInfo> methodInfoList) {
+		out.println("<table>");
+		out.println("<tr><th colspan='7'> Method Params </th></tr>");
+		out.println("<tr><th> Method </th><th> Param Name </th><th> Request </th><th> Type </th>"
 				+ "<th> Required </th><th> Default </th><th> Param Description </th></tr>");
 		for (MethodInfo methodInfo : methodInfoList) {
 			List<ParamInfo> paramInfos = methodInfo.getParamInfos();
@@ -290,76 +286,63 @@ public class HtmlPathMapWriter implements PathMapWriter {
 				for (ParamInfo paramInfo : paramInfos) {
 					out.write("<tr>");
 					if (first) {
-						out.write("<td rowspan=\"" + paramInfos.size() + "\"> "
-								+ htmlEscape(methodInfo.getJavaMethodName()) + "(...)");
+						out.write("<td rowspan='" + paramInfos.size() + "'> "
+								+ htmlEscape(methodInfo.getJavaMethodName()) + "(...)</td>");
 						first = false;
 					}
-					out.write(" </td><td> " + htmlEscape(paramInfo.getRequestName()));
-					out.write(" </td><td> " + htmlEscape(paramInfo.getRequestKind().getDescription()));
-					out.write(" </td><td> " + htmlEscape(paramInfo.getJavaTypeName()));
-					out.write(" </td><td> " + (paramInfo.isRequired() ? true : "&nbsp;"));
+					out.write("<td> " + htmlEscape(paramInfo.getRequestName()) + "</td>");
+					out.write("<td> " + htmlEscape(paramInfo.getRequestKind().getDescription()) + "</td>");
+					out.write("<td> " + htmlEscape(paramInfo.getJavaTypeName()) + "</td>");
+					out.write("<td> " + (paramInfo.isRequired() ? true : "&nbsp;" + "</td>"));
+					out.write("<td> ");
+					writeIfNotNull(out, paramInfo.getDefaultValue(), "&nbsp;");
 					out.write(" </td><td> ");
-					writeIfNotNull(out, paramInfo.getDefaultValue());
-					out.write(" </td><td> ");
-					writeIfNotNull(out, paramInfo.getJavaDoc());
-					writeLine(out, "</td></tr>");
+					writeIfNotNull(out, paramInfo.getJavaDoc(), "&nbsp;");
+					out.println("</td></tr>");
 				}
 			}
 		}
-		writeLine(out, "</table>");
+		out.println("</table>");
 	}
 
-	private void writeHeader(String title, BufferedWriter out) throws IOException {
-		writeLine(out, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>");
-		writeLine(out, "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"");
-		writeLine(out, "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-		writeLine(out, "<html xmlns=\"http://www.w3.org/1999/xhtml\">");
-		writeLine(out, "<head>");
-		writeLine(out, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />");
-		writeLine(out, "<title> ", title, " </title>");
-		writeLine(out, "<style>");
-		writeLine(out, "  table { border-collapse: collapse; }");
-		writeLine(out, "  table, th, td { border: 1px solid black; }");
-		writeLine(out, "  th, td { padding: 5px; }");
-		// writeLine(out, " tr:hover {background-color: #f5f5f5}");
-		writeLine(out, "  tr:nth-child(even) { background-color: #f2f2f2; }");
-		writeLine(out, "</style>");
-		writeLine(out, "</head>");
-		writeLine(out, "<body>");
-		writeLine(out, "<h1> ", title, " </h1>");
+	private void writeHeader(String title, PrintWriter out) {
+		out.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>");
+		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"");
+		out.println("    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+		out.println("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
+		out.println("<head>");
+		out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />");
+		out.println("<title> " + htmlEscape(title) + " </title>");
+		out.println("<style>");
+		out.println("   table { border-collapse: collapse; }");
+		out.println("   table, th, td { border: 1px solid black; }");
+		out.println("   th, td { padding: 5px; }");
+		out.println("   tr:nth-child(even) { background-color: #f2f2f2; }");
+		out.println("</style>");
+		out.println("</head>");
+		out.println("<body>");
+		out.println("<h1> " + htmlEscape(title) + " </h1>");
 	}
 
-	private void writeTrailer(BufferedWriter out, String relativePathToRoot) throws IOException {
+	private void writeTrailer(PrintWriter out, String relativePathToRoot) {
 		if (relativePathToRoot == null) {
 			relativePathToRoot = "./";
 		}
-		writeLine(out, "<p> <a href=\"" + relativePathToRoot + "index.html\">Path summary<a> &nbsp;&nbsp;&nbsp;&nbsp;"
-				+ "  <a href=\"" + relativePathToRoot + CLASS_SUMMARY_FILE + "\">Class summary</a> </p>");
-		writeLine(out, "</body>");
-		writeLine(out, "</html>");
-	}
-
-	private void writeLine(BufferedWriter out, String string) throws IOException {
-		out.write(string);
-		out.newLine();
-	}
-
-	private void writeLine(BufferedWriter out, String... strings) throws IOException {
-		for (String str : strings) {
-			out.write(str);
-		}
-		out.newLine();
+		out.println("<p> <a href='" + relativePathToRoot + "index.html'>Path summary<a> &nbsp;&nbsp;&nbsp;&nbsp;"
+				+ "  <a href='" + relativePathToRoot + CLASS_SUMMARY_FILE + "'>Class summary</a> </p>");
+		out.println("</body>");
+		out.println("</html>");
 	}
 
 	private boolean isEmpty(String[] array) {
 		return (array == null || array.length == 0);
 	}
 
-	private void printArray(BufferedWriter out, String prefix, String[] array) throws IOException {
+	private void printArray(PrintWriter out, String prefix, String[] array) {
 		if (array == null || array.length == 0) {
 			return;
 		}
-		writeIfNotNull(out, prefix);
+		writeIfNotNull(out, prefix, null);
 		for (int i = 0; i < array.length; i++) {
 			if (i > 0) {
 				out.write(", ");
@@ -368,9 +351,13 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		}
 	}
 
-	private void writeIfNotNull(BufferedWriter out, String string) throws IOException {
-		if (string != null) {
-			out.write(htmlEscape(string));
+	private void writeIfNotNull(PrintWriter out, String string, String nullString) {
+		if (string == null) {
+			if (nullString != null) {
+				out.print(htmlEscape(nullString));
+			}
+		} else {
+			out.print(htmlEscape(string));
 		}
 	}
 
