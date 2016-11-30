@@ -15,6 +15,12 @@ Gray Watson
 
 -------------------------------------------------------------------------------------------------------
 
+SAMPLE OUTPUT
+
+For sample output, see this hiearchy: http://256stuff.com/sources/spring-request-doclet/sample/
+
+-------------------------------------------------------------------------------------------------------
+
 HOW TO USE WITH MAVEN
 
 To use this doclet you will need to include something like the following into your Maven pom.xml or
