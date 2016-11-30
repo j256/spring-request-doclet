@@ -19,7 +19,7 @@ run the javadoc command
         <version>?.?.?</version>
         <reportSets>
           <reportSet>
-            <id>springrequestdoclet</id>
+            <id>spring-request-doclet</id>
             <reports>
               <report>javadoc</report>
             </reports>
