@@ -1,7 +1,7 @@
 package com.j256.springrequestdoclet.collector;
 
 /**
- * Request information mapped to a path.
+ * Request end-point information that is mapped to a request path.
  * 
  * @author graywatson
  */

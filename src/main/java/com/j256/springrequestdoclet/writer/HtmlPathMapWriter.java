@@ -22,7 +22,7 @@ import com.j256.springrequestdoclet.collector.ParamInfo;
  * 
  * @author graywatson
  */
-public class HtmlPathMapWriter implements PathMapWriter {
+public class HtmlPathMapWriter implements EndPointMapWriter {
 
 	private static final String CLASS_SUBDIR = "classes";
 	private static final String CLASS_SUMMARY_FILE = "classes.html";

@@ -23,7 +23,7 @@
 							<docletArtifact>
 								<groupId>com.j256.spring-request-doclet</groupId>
 								<artifactId>spring-request-doclet</artifactId>
-								<version>0.1-SNAPSHOT</version>
+								<version>0.2</version>
 							</docletArtifact>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<name>Spring Request Doclet</name>

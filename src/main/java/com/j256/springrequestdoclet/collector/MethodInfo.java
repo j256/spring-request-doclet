@@ -3,7 +3,7 @@ package com.j256.springrequestdoclet.collector;
 import java.util.List;
 
 /**
- * Class method information which refines the class path and adds other selectors.
+ * Method information which refines the request path and adds other narrowing fields.
  * 
  * @author graywatson
  */

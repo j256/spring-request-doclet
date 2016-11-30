@@ -15,7 +15,7 @@ import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.Parameter;
 
 /**
- * Classed used to assemble and then regurgitate information by path.
+ * Collector that processed the class documentation and extracts and processes the information.
  * 
  * @author graywatson
  */

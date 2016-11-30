@@ -1,7 +1,7 @@
 package com.j256.springrequestdoclet.collector;
 
 /**
- * Information from the class which is usually paths.
+ * Information from the class being collected.
  * 
  * @author graywatson
  */
