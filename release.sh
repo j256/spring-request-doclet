@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Release script for SimpleMagic
+# Release script
 #
 
 LIBRARY="spring-request-doclet"
