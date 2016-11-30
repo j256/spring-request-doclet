@@ -32,34 +32,39 @@ public class HtmlPathMapWriter implements PathMapWriter {
 
 	@Override
 	public void write(Map<String, List<EndPoint>> endPointMap) throws IOException {
+		// write a path summary into our index.html
+		writePathSummary(endPointMap, new File("index.html"));
 		// write an index.html for all of the paths linking to path details
-		writePathSummary(endPointMap, "Path Summary", new File("index.html"));
-		// write an index.html for all of the paths linking to path details
-		writeClassSummary(endPointMap, "Class Summary", new File(CLASS_SUMMARY_FILE));
+		writeClassSummary(endPointMap, new File(CLASS_SUMMARY_FILE));
 		// write a file for each class
 		writeClassFiles(endPointMap);
 	}
 
-	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String title, File file) throws IOException {
+	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, File file) throws IOException {
 		PrintWriter out = new PrintWriter(file);
 		try {
-			writePathSummary(endPointMap, title, out);
+			writePathSummary(endPointMap, out);
 		} finally {
 			out.close();
 		}
 	}
 
-	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String title, PrintWriter out) {
+	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, PrintWriter out) {
 
-		writeHeader(title, out);
+		writeHeader("Path Summary", out);
+
+		out.println("<p> The following is a request path summary for the classes in this library. "
+				+ "The request narrowing fields give details about how the requests are routed "
+				+ "to the various different classes and methods to be handled.  More documentation "
+				+ "is available at the class level which shows parameter details. </p>");
 
 		List<String> pathList = new ArrayList<String>(endPointMap.keySet());
 		Collections.sort(pathList);
 		out.println("<table>");
-		out.println("<tr><th rowspan='2'> Path </th><th colspan='3'> Request Narrowing </th>"
+		out.println("<tr><th colspan='4'> Request Narrowing </th>"
 				+ "<th rowspan='2'> Class </th><th rowspan='2'> Method </th>"
 				+ "<th rowspan='2'> Description </th></tr>");
-		out.println("<tr><th> GET/POST </th><th> Param(s) </th><th> Other </th>");
+		out.println("<tr><th> Path </th><th> GET/POST </th><th> Param(s) </th><th> Other </th>");
 		for (String path : pathList) {
 
 			// maybe we should break down the paths by element if there are a lot of them
@@ -119,19 +124,21 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		writeTrailer(out, null);
 	}
 
-	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String title, File file)
-			throws IOException {
+	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, File file) throws IOException {
 		PrintWriter out = new PrintWriter(file);
 		try {
-			writeClassSummary(endPointMap, title, out);
+			writeClassSummary(endPointMap, out);
 		} finally {
 			out.close();
 		}
 	}
 
-	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String title, PrintWriter out) {
+	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, PrintWriter out) {
 
-		writeHeader(title, out);
+		writeHeader("Class Summary", out);
+
+		out.println("<p> The following is a class summary showing the classes and their "
+				+ "associated path handling. </p>");
 
 		// make a map of class -> paths
 		Map<ClassInfo, List<String>> classInfoMap = new HashMap<ClassInfo, List<String>>();
@@ -209,6 +216,9 @@ public class HtmlPathMapWriter implements PathMapWriter {
 
 		writeHeader("Class " + classInfo.getClassName(), out);
 
+		out.println("<p> The following is specific documentation for a class starting with javadoc summary.  "
+				+ "The full javadocs (if any) are the bottom. </p>");
+
 		// gather up the methods so we can sort them
 		List<MethodInfo> methodInfoList = new ArrayList<MethodInfo>();
 		Map<MethodInfo, String> methodPathMap = new HashMap<MethodInfo, String>();
@@ -219,14 +229,21 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		// sort by class name
 		Collections.sort(methodInfoList);
 
-		String javaDoc = classInfo.getJavaDoc();
-		if (javaDoc != null && !javaDoc.isEmpty()) {
+		String javaDocFirst = classInfo.getJavaDocFirstSentence();
+		if (javaDocFirst != null && !javaDocFirst.isEmpty()) {
 			// NOTE: javadoc might have html which we hope is ok
-			out.println("<p> " + javaDoc + "</p>");
+			out.println("<p> Javadoc summary: " + javaDocFirst + "</p>");
 		}
 
 		writeMethodInfo(out, methodInfoList, methodPathMap);
 		writeParamInfo(out, methodInfoList);
+
+		String javaDoc = classInfo.getJavaDoc();
+		if (javaDoc != null && !javaDoc.isEmpty() && !javaDoc.equals(javaDocFirst)) {
+			// NOTE: javadoc might have html which we hope is ok
+			out.println("<p> " + javaDoc + "</p>");
+		}
+
 		writeTrailer(out, "../");
 	}
 
@@ -318,6 +335,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 		out.println("   table, th, td { border: 1px solid black; }");
 		out.println("   th, td { padding: 5px; }");
 		out.println("   tr:nth-child(even) { background-color: #f2f2f2; }");
+		out.println("   body { width: 80%; }");
 		out.println("</style>");
 		out.println("</head>");
 		out.println("<body>");
@@ -354,7 +372,7 @@ public class HtmlPathMapWriter implements PathMapWriter {
 	private void writeIfNotNull(PrintWriter out, String string, String nullString) {
 		if (string == null) {
 			if (nullString != null) {
-				out.print(htmlEscape(nullString));
+				out.print(nullString);
 			}
 		} else {
 			out.print(htmlEscape(string));

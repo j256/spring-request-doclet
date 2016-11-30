@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.j256.springrequestdoclet</groupId>
-	<artifactId>springrequestdoclet</artifactId>
+	<groupId>com.j256.spring-request-doclet</groupId>
+	<artifactId>spring-request-doclet</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Spring Request Doclet</name>
-	<url>http://256stuff.com/sources/springrequestdoclet/</url>
-	<description>Spring Web Request Doclet Generator</description>
+	<url>http://256stuff.com/sources/spring-request-doclet/</url>
+	<description>Spring Web Request Doclet Documentation Generator</description>
 	<licenses>
 		<license>
 			<name>ISC License</name>
@@ -27,9 +27,9 @@
 		<junit-version>4.8.1</junit-version>
 	</properties>
 	<scm>
-		<url>https://github.com/j256/springrequestdoclet</url>
-		<connection>scm:git:ssh://git@github.com/j256/springrequestdoclet.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/j256/springrequestdoclet.git</developerConnection>
+		<url>https://github.com/j256/spring-request-doclet</url>
+		<connection>scm:git:ssh://git@github.com/j256/spring-request-doclet.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/j256/spring-request-doclet.git</developerConnection>
 	</scm>
 	<developers>
 		<developer>
@@ -63,20 +63,7 @@
 		</profile>
 	</profiles>
 	<build>
-		<finalName>springrequestdoclet</finalName>
-		<!-- Resources -->
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-		</resources>
-		<!-- Test Resources -->
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
-		<!-- Plugins -->
+		<finalName>spring-request-doclet</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -95,24 +82,6 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.6</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

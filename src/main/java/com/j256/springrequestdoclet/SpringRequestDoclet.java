@@ -14,7 +14,8 @@ import com.sun.javadoc.LanguageVersion;
 import com.sun.javadoc.RootDoc;
 
 /**
- * Spring request doclet class. Although it extends @{link Doclet} is really a collection of static methods.
+ * Spring request doclet main class. Although it extends @{link Doclet} is really a collection of static methods that (I
+ * guess) are called via reflection.
  * 
  * @author graywatson
  */
@@ -32,7 +33,7 @@ public class SpringRequestDoclet extends Doclet {
 			collector.processClass(classDoc);
 		}
 
-		// now print out all of the
+		// now write out all of the documentation we've collected
 		Map<String, List<EndPoint>> endPointMap = collector.getPathInfoMap();
 		try {
 			writer.write(endPointMap);
@@ -57,13 +58,14 @@ public class SpringRequestDoclet extends Doclet {
 	 * options that are part of the javadoc calls -- at least when done via maven.
 	 */
 	public static int optionLength(String option) {
-		if ("-o".equals(option)) {
-			// -o + argument
-			return 2;
-		} else {
-			// this allows other unknown options
-			return 1;
-		}
+		// this allows other unknown options
+		return 1;
+
+		// NOTE: if we were processing arguments
+		// if ("-o".equals(option)) {
+		// // -o + argument
+		// return 2;
+		// }
 		// return 0; means option unknown
 	}
 
@@ -73,13 +75,13 @@ public class SpringRequestDoclet extends Doclet {
 	 * choose a different collector or writer.
 	 */
 	public static boolean validOptions(String[][] options, DocErrorReporter docErrorReporter) {
-		for (int optCount = 0; optCount < options.length; optCount++) {
-			for (String arg : options[optCount]) {
-				if ("-o".equals(arg)) {
-					// ...
-				}
-			}
-		}
+		// for (int optCount = 0; optCount < options.length; optCount++) {
+		// for (String arg : options[optCount]) {
+		// if ("-o".equals(arg)) {
+		// ...
+		// }
+		// }
+		// }
 		return true;
 	}
 }
