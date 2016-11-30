@@ -1,6 +1,15 @@
 This package provides a simple doclet for auto-generating documentation using Java's javadoc generator
 specifically for tracking spring's web requests.
 
+For more information, visit the home page:
+	http://256stuff.com/sources/spring-request-doclet/
+
+The git repository is:
+	https://github.com/j256/spring-request-doclet
+
+Maven packages are published via the central repo:
+	http://repo1.maven.org/maven2/com/j256/spring-request-doclet/spring-request-doclet/
+
 Enjoy,
 Gray Watson
 
