@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -141,13 +142,13 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 				+ "associated path handling. </p>");
 
 		// make a map of class -> paths
-		Map<ClassInfo, List<String>> classInfoMap = new HashMap<ClassInfo, List<String>>();
+		Map<ClassInfo, Set<String>> classInfoMap = new HashMap<ClassInfo, Set<String>>();
 		for (Entry<String, List<EndPoint>> entry : endPointMap.entrySet()) {
 			for (EndPoint endPoint : entry.getValue()) {
 				ClassInfo classInfo = endPoint.getClassInfo();
-				List<String> pathList = classInfoMap.get(classInfo);
+				Set<String> pathList = classInfoMap.get(classInfo);
 				if (pathList == null) {
-					pathList = new ArrayList<String>();
+					pathList = new LinkedHashSet<String>();
 					classInfoMap.put(classInfo, pathList);
 				}
 				pathList.add(entry.getKey());
