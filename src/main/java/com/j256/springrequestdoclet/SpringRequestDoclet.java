@@ -14,32 +14,47 @@ import com.sun.javadoc.LanguageVersion;
 import com.sun.javadoc.RootDoc;
 
 /**
- * Example java doclet generator class.
+ * Spring request doclet class. Although it extends @{link Doclet} is really a collection of static methods.
  * 
  * @author graywatson
  */
 public class SpringRequestDoclet extends Doclet {
 
-	private static final SpringRequestDoclet doclet = new SpringRequestDoclet();
 	private static HtmlPathMapWriter writer = new HtmlPathMapWriter();
 
 	/**
-	 * Starting the
+	 * Actually do the processing of the variable class information so we can general the documentation output.
 	 */
 	public static boolean start(RootDoc root) {
-		return doclet.doStart(root);
+		// run our collector to convert the root doc information
+		EndPointCollector collector = new EndPointCollector();
+		for (ClassDoc classDoc : root.classes()) {
+			collector.processClass(classDoc);
+		}
+
+		// now print out all of the
+		Map<String, List<EndPoint>> endPointMap = collector.getPathInfoMap();
+		try {
+			writer.write(endPointMap);
+			return true;
+		} catch (IOException ioe) {
+			// print out the exception and return error
+			ioe.printStackTrace();
+			return false;
+		}
 	}
 
 	/**
-	 * Possibly necessary to show generic arguments.
+	 * This method may be necessary to expose show generic arguments in the class information.
 	 */
 	public static LanguageVersion languageVersion() {
 		return LanguageVersion.JAVA_1_5;
 	}
 
 	/**
-	 * This is necessary otherwise syntax errors because of invalid options is generated. At least "return 1;" is
-	 * required. "return 0;" is option unknown.
+	 * This method is necessary otherwise syntax errors because of invalid options is generated. At least "return 1;" is
+	 * required. "return 0;" is option unknown. There are options that this specific doclet uses but there is also other
+	 * options that are part of the javadoc calls -- at least when done via maven.
 	 */
 	public static int optionLength(String option) {
 		if ("-o".equals(option)) {
@@ -53,7 +68,9 @@ public class SpringRequestDoclet extends Doclet {
 	}
 
 	/**
-	 * This is necessary otherwise syntax errors because of invalid options is generated.
+	 * This method is necessary otherwise syntax errors are generated because of invalid options is generated. This is
+	 * also how the options and any arguments are processed. There is where we could set various output flags or maybe
+	 * choose a different collector or writer.
 	 */
 	public static boolean validOptions(String[][] options, DocErrorReporter docErrorReporter) {
 		for (int optCount = 0; optCount < options.length; optCount++) {
@@ -64,25 +81,5 @@ public class SpringRequestDoclet extends Doclet {
 			}
 		}
 		return true;
-	}
-
-	private boolean doStart(RootDoc root) {
-
-		// start our collector
-		EndPointCollector collector = new EndPointCollector();
-		for (ClassDoc classDoc : root.classes()) {
-			collector.processClass(classDoc);
-		}
-
-		// now print out all of the
-		Map<String, List<EndPoint>> endPointMap = collector.getPathInfoMap();
-		try {
-			writer.write(endPointMap);
-			return true;
-		} catch (IOException ioe) {
-			// we just print out the exception and return error
-			ioe.printStackTrace();
-			return false;
-		}
 	}
 }
