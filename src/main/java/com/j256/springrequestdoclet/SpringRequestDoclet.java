@@ -25,6 +25,8 @@ public class SpringRequestDoclet extends Doclet {
 
 	/**
 	 * Actually do the processing of the variable class information so we can general the documentation output.
+	 * 
+	 * @see Doclet#start(RootDoc)
 	 */
 	public static boolean start(RootDoc root) {
 		// run our collector to convert the root doc information
@@ -47,6 +49,8 @@ public class SpringRequestDoclet extends Doclet {
 
 	/**
 	 * This method may be necessary to expose show generic arguments in the class information.
+	 * 
+	 * @see Doclet#languageVersion()
 	 */
 	public static LanguageVersion languageVersion() {
 		return LanguageVersion.JAVA_1_5;
@@ -54,8 +58,10 @@ public class SpringRequestDoclet extends Doclet {
 
 	/**
 	 * This method is necessary otherwise syntax errors because of invalid options is generated. At least "return 1;" is
-	 * required. "return 0;" is option unknown. There are options that this specific doclet uses but there is also other
-	 * options that are part of the javadoc calls -- at least when done via maven.
+	 * required. "return 0;" is option unknown. There may be options that this specific doclet uses but there is also
+	 * other options that are part of the javadoc calls -- at least when done via maven.
+	 * 
+	 * @see Doclet#optionLength(String)
 	 */
 	public static int optionLength(String option) {
 		// this allows other unknown options
@@ -73,6 +79,8 @@ public class SpringRequestDoclet extends Doclet {
 	 * This method is necessary otherwise syntax errors are generated because of invalid options is generated. This is
 	 * also how the options and any arguments are processed. There is where we could set various output flags or maybe
 	 * choose a different collector or writer.
+	 * 
+	 * @see Doclet#validOptions(String[][], DocErrorReporter)
 	 */
 	public static boolean validOptions(String[][] options, DocErrorReporter docErrorReporter) {
 		// for (int optCount = 0; optCount < options.length; optCount++) {
