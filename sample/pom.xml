@@ -18,7 +18,8 @@
 							<report>javadoc</report>
 						</reports>
 						<configuration>
-							<name>Spring Docs</name>
+							<name>Spring Request Doclet</name>
+							<description>Spring Request documentation.</description>
 							<doclet>com.j256.springrequestdoclet.SpringRequestDoclet</doclet>
 							<docletArtifact>
 								<groupId>com.j256.spring-request-doclet</groupId>
@@ -26,9 +27,7 @@
 								<version>0.2</version>
 							</docletArtifact>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<name>Spring Request Doclet</name>
-							<description>Spring Request documentation.</description>
-							<destDir>springrequestdocs</destDir>
+							<destDir>spring-request-docs</destDir>
 						</configuration>
 					</reportSet>
 				</reportSets>

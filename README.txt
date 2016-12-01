@@ -39,7 +39,8 @@ run the javadoc command
               <report>javadoc</report>
             </reports>
             <configuration>
-              <name>Spring Docs</name>
+              <name>Spring Request Docs</name>
+              <description>Spring Request documentation.</description>
               <doclet>com.j256.springrequestdoclet.SpringRequestDoclet</doclet>
               <docletArtifact>
                 <groupId>com.j256.spring-request-doclet</groupId>
@@ -47,9 +48,7 @@ run the javadoc command
                 <version>?.?.?</version>
               </docletArtifact>
               <useStandardDocletOptions>false</useStandardDocletOptions>
-              <name>Spring Request Doclet</name>
-              <description>Spring Request documentation.</description>
-              <destDir>springrequestdocs</destDir>
+              <destDir>spring-request-docs</destDir>
             </configuration>
           </reportSet>
         </reportSets>
