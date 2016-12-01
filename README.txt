@@ -23,8 +23,8 @@ For sample output, see this hiearchy: http://256stuff.com/sources/spring-request
 
 HOW TO USE WITH MAVEN
 
-To use this doclet you will need to include something like the following into your Maven pom.xml or
-run the javadoc command
+To use this doclet you will need to include something like the following into your Maven pom.xml and
+execute 'mvn site' or run the javadoc command by hand.
 
   <reporting>
     <plugins>
