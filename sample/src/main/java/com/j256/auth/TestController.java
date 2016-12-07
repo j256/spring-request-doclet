@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -29,5 +30,43 @@ public class TestController {
 			@RequestParam(value = "resp", required = false) Integer responseCode) {
 
 		return null;
+	}
+
+	/**
+	 * Method that has an overlapping name but with an additional argument.
+	 * 
+	 * @param sid
+	 *            Session-id returned by the oauth processing.
+	 * @param arg
+	 *            Random argument.
+	 */
+	@RequestMapping(method = RequestMethod.GET, produces = "text/html", params = "arg")
+	public @ResponseBody String sayHello(//
+			@RequestParam(value = "sid", required = false) String sid, //
+			@RequestParam(value = "arg", required = false) String arg) {
+
+		return null;
+	}
+
+	/**
+	 * Demonstration of a method which has a body parameter.
+	 * 
+	 * @param request
+	 *            Request body that encapsulates a number of fields.
+	 * @return HTML results from the operation.
+	 */
+	@RequestMapping(method = RequestMethod.POST, produces = "text/html", consumes = "application/json")
+	public @ResponseBody String objectPost(@RequestBody UpdateUser updateUser) {
+		return null;
+	}
+
+	/**
+	 * Demonstration of a method which has a body parameter which is just a string.
+	 * 
+	 * @param body
+	 *            Request body that encapsulates the whole post as a string.
+	 */
+	@RequestMapping(method = RequestMethod.POST, consumes = "application/json")
+	public void stringPost(@RequestBody String body) {
 	}
 }

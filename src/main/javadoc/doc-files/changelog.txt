@@ -1,2 +1,9 @@
-0.2: 11/30/2016
+0.3 : ?/?/2016
+
+	* Added @RequestBody handling.
+	* Added @ResponseBody information.
+	* Revamped the output to have a per method description file.
+
+0.2 : 11/30/2016
+
 	* Initial public release.

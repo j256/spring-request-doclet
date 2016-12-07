@@ -10,7 +10,8 @@ import java.util.List;
 public class MethodInfo implements Comparable<MethodInfo> {
 
 	private final String javaMethodName;
-	private final String javadoc;
+	private final String javaDoc;
+	private final String javaDocFirstSentence;
 	private final String[] paths;
 	private final String[] methods;
 	private final String[] params;
@@ -18,26 +19,36 @@ public class MethodInfo implements Comparable<MethodInfo> {
 	private final String[] consumes;
 	private final String[] produces;
 	private final List<ParamInfo> paramInfos;
+	private final ContentsInfo requestInfo;
+	private final ContentsInfo responseInfo;
 
-	public MethodInfo(String javaMethodName, String javadoc, String[] paths, String[] methods, String[] params,
-			String[] headers, String[] consumes, String[] produces, List<ParamInfo> paramInfos) {
+	public MethodInfo(String javaMethodName, String javaDoc, String javaDocFirstSentence, String[] paths,
+			String[] methods, String[] params, String[] headers, String[] consumes, String[] produces,
+			List<ParamInfo> paramInfos, ContentsInfo requestInfo, ContentsInfo responseInfo) {
 		this.javaMethodName = javaMethodName;
 		this.paths = paths;
-		this.javadoc = javadoc;
+		this.javaDoc = javaDoc;
+		this.javaDocFirstSentence = javaDocFirstSentence;
 		this.methods = methods;
 		this.params = params;
 		this.headers = headers;
 		this.consumes = consumes;
 		this.produces = produces;
 		this.paramInfos = paramInfos;
+		this.requestInfo = requestInfo;
+		this.responseInfo = responseInfo;
 	}
 
 	public String getJavaMethodName() {
 		return javaMethodName;
 	}
 
-	public String getJavadoc() {
-		return javadoc;
+	public String getJavaDoc() {
+		return javaDoc;
+	}
+
+	public String getJavaDocFirstSentence() {
+		return javaDocFirstSentence;
 	}
 
 	public String[] getPaths() {
@@ -66,6 +77,14 @@ public class MethodInfo implements Comparable<MethodInfo> {
 
 	public List<ParamInfo> getParamInfos() {
 		return paramInfos;
+	}
+
+	public ContentsInfo getRequestInfo() {
+		return requestInfo;
+	}
+
+	public ContentsInfo getResponseInfo() {
+		return responseInfo;
 	}
 
 	@Override

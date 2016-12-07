@@ -13,6 +13,7 @@ import com.sun.javadoc.AnnotationValue;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.Parameter;
+import com.sun.javadoc.Type;
 
 /**
  * Collector that processed the class documentation and extracts and processes the information.
@@ -23,6 +24,7 @@ public class EndPointCollector {
 
 	private static final String REQUEST_MAPPING_ANNOTATION_NAME = "RequestMapping";
 	private static final String REQUEST_PARAM_ANNOTATION_NAME = "RequestParam";
+	private static final String REQUEST_BODY_ANNOTATION_NAME = "RequestBody";
 	private static final String PATH_VARIABLE_ANNOTATION_NAME = "PathVariable";
 	private static final String REQUEST_HEADER_ANNOTATION_NAME = "RequestHeader";
 
@@ -92,11 +94,24 @@ public class EndPointCollector {
 			}
 		}
 
+		// process the parameters looking for a @RequestBody parameter
+		ContentsInfo requestInfo = null;
+		for (Parameter param : methodDoc.parameters()) {
+			ContentsInfo contentsInfo = handleRequestBodyParam(param, methodJavaDoc);
+			if (contentsInfo != null) {
+				requestInfo = contentsInfo;
+				break;
+			}
+		}
+
+		// process the returned class to see if it is @ResponseBody
+		ContentsInfo responseInfo = handleResponseBody(methodDoc);
+
 		if (paramInfos.isEmpty()) {
 			paramInfos = null;
 		}
-		MethodInfo methodInfo = new MethodInfo(methodDoc.name(), javaDocFirstSentence(methodJavaDoc), paths, methods,
-				params, headers, consumes, produces, paramInfos);
+		MethodInfo methodInfo = new MethodInfo(methodDoc.name(), methodJavaDoc, javaDocFirstSentence(methodJavaDoc),
+				paths, methods, params, headers, consumes, produces, paramInfos, requestInfo, responseInfo);
 
 		if (classInfo.getPaths() == null) {
 			addClassPathInfo(classInfo, methodInfo, null);
@@ -193,6 +208,75 @@ public class EndPointCollector {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Process the annotations from each of the methods looking for a @RequestMapping and/or @RequestMethod.
+	 */
+	private ContentsInfo handleRequestBodyParam(Parameter param, String methodJavaDoc) {
+
+		// @RequestBody SomeObject someObject
+		AnnotationDesc requestBody = findAnnotation(param.annotations(), REQUEST_BODY_ANNOTATION_NAME);
+		if (requestBody == null) {
+			return null;
+		} else {
+			String javaDoc = extractParamDocs(methodJavaDoc, param.name());
+			return ContentsInfo.fromRequestBody(param.name(), param.typeName(), javaDoc,
+					extractFieldInfos(param.type()));
+		}
+	}
+
+	/**
+	 * Process the return type from a method marked (probably) with @ResponseBody.
+	 */
+	private ContentsInfo handleResponseBody(MethodDoc methodDoc) {
+		Type type = methodDoc.returnType();
+		if (type == null || "void".equals(type.typeName())) {
+			return null;
+		} else {
+			return ContentsInfo.fromResponse(type.typeName(), null, extractFieldInfos(type));
+		}
+	}
+
+	/**
+	 * Extract field information from a type which is either a method parameter or a return object.
+	 */
+	private List<FieldInfo> extractFieldInfos(Type type) {
+		if (type.isPrimitive()) {
+			return null;
+		}
+		String typeName = type.typeName();
+		// skip the core objects
+		if ("Boolean".equals(typeName) || "Byte".equals(typeName) || "Short".equals(typeName)
+				|| "Integer".equals(typeName) || "Long".equals(typeName) || "Float".equals(typeName)
+				|| "Double".equals(typeName) || "String".equals(typeName)) {
+			return null;
+		}
+
+		ClassDoc classDoc = type.asClassDoc();
+		if (classDoc == null) {
+			return null;
+		}
+		MethodDoc[] methodDocs = classDoc.methods();
+		if (methodDocs == null) {
+			return null;
+		}
+
+		List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>(methodDocs.length);
+		for (MethodDoc methodDoc : methodDocs) {
+			String methodName = methodDoc.name();
+			String fieldName = null;
+			if (methodName.startsWith("get") && methodName.length() > 3) {
+				fieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+			} else if (methodName.startsWith("is") && methodName.length() > 2) {
+				fieldName = Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+			}
+			if (fieldName != null) {
+				fieldInfos.add(new FieldInfo(fieldName, methodDoc.returnType().typeName(),
+						javaDocFirstSentence(methodDoc.getRawCommentText())));
+			}
+		}
+		return fieldInfos;
 	}
 
 	private String extractParamDocs(String methodJavaDocs, String paramName) {

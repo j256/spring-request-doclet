@@ -30,11 +30,28 @@ public class UserInfoController {
 	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody UserInfo getUserInfo(@RequestParam(value = "userId") String userId,
 			@RequestParam(value = OAuthLoginController.DEFAULT_SESSION_ID_PARAM) String sessionId) {
-
 		return null;
 	}
 
+	/**
+	 * User information returned.
+	 */
 	public static class UserInfo {
-		// ...
+		private String name;
+		private String rank;
+
+		/**
+		 * Name of the user.
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * Rank of the usr.
+		 */
+		public String getRank() {
+			return rank;
+		}
 	}
 }
