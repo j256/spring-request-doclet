@@ -39,6 +39,7 @@ public class UserInfoController {
 	public static class UserInfo {
 		private String name;
 		private String rank;
+		private String[] permissions;
 
 		/**
 		 * Name of the user.
@@ -52,6 +53,13 @@ public class UserInfoController {
 		 */
 		public String getRank() {
 			return rank;
+		}
+
+		/**
+		 * Permission tokens.
+		 */
+		public String[] getPermissions() {
+			return permissions;
 		}
 	}
 }
