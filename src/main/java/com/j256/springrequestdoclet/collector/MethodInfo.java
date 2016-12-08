@@ -10,10 +10,11 @@ import java.util.List;
 public class MethodInfo implements Comparable<MethodInfo> {
 
 	private final String javaMethodName;
+	private final String uniqueName;
 	private final String javaDoc;
 	private final String javaDocFirstSentence;
 	private final String[] paths;
-	private final String[] methods;
+	private final String[] httpMethods;
 	private final String[] params;
 	private final String[] headers;
 	private final String[] consumes;
@@ -22,14 +23,15 @@ public class MethodInfo implements Comparable<MethodInfo> {
 	private final ContentsInfo requestInfo;
 	private final ContentsInfo responseInfo;
 
-	public MethodInfo(String javaMethodName, String javaDoc, String javaDocFirstSentence, String[] paths,
-			String[] methods, String[] params, String[] headers, String[] consumes, String[] produces,
+	public MethodInfo(String javaMethodName, String uniqueName, String javaDoc, String javaDocFirstSentence, String[] paths,
+			String[] httpMethods, String[] params, String[] headers, String[] consumes, String[] produces,
 			List<ParamInfo> paramInfos, ContentsInfo requestInfo, ContentsInfo responseInfo) {
 		this.javaMethodName = javaMethodName;
+		this.uniqueName = uniqueName;
 		this.paths = paths;
 		this.javaDoc = javaDoc;
 		this.javaDocFirstSentence = javaDocFirstSentence;
-		this.methods = methods;
+		this.httpMethods = httpMethods;
 		this.params = params;
 		this.headers = headers;
 		this.consumes = consumes;
@@ -41,6 +43,10 @@ public class MethodInfo implements Comparable<MethodInfo> {
 
 	public String getJavaMethodName() {
 		return javaMethodName;
+	}
+
+	public String getUniqueName() {
+		return uniqueName;
 	}
 
 	public String getJavaDoc() {
@@ -55,8 +61,8 @@ public class MethodInfo implements Comparable<MethodInfo> {
 		return paths;
 	}
 
-	public String[] getMethods() {
-		return methods;
+	public String[] getHttpMethods() {
+		return httpMethods;
 	}
 
 	public String[] getParams() {

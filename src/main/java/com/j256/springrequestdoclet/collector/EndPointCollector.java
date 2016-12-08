@@ -2,8 +2,10 @@ package com.j256.springrequestdoclet.collector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +33,7 @@ public class EndPointCollector {
 	private static final String REQUEST_METHOD_PACKAGE_PREFIX =
 			"org.springframework.web.bind.annotation.RequestMethod.";
 	private static final Pattern JAVADOC_PARAM_PATTERN = Pattern.compile("(?s)@param\\s+([^\\s]+)\\s+([^@]+)");
+	private static final Pattern JAVADOC_RETURN_PATTERN = Pattern.compile("(?s)@return\\s+([^@]+)");
 
 	private final Map<String, List<EndPoint>> pathInfoMap = new HashMap<String, List<EndPoint>>();
 
@@ -45,8 +48,9 @@ public class EndPointCollector {
 		String javaDoc = classDoc.getRawCommentText();
 		ClassInfo classInfo = new ClassInfo(classDoc.name(), classDoc.qualifiedTypeName(), javaDoc,
 				javaDocFirstSentence(javaDoc), paths);
+		Set<String> methodNameSet = new HashSet<String>();
 		for (MethodDoc methodDoc : classDoc.methods()) {
-			handleMethod(classInfo, methodDoc);
+			handleMethod(classInfo, methodNameSet, methodDoc);
 		}
 	}
 
@@ -57,7 +61,7 @@ public class EndPointCollector {
 	/**
 	 * Process the annotations from each of the methods looking for a @RequestMapping and/or @RequestMethod.
 	 */
-	private void handleMethod(ClassInfo classInfo, MethodDoc methodDoc) {
+	private void handleMethod(ClassInfo classInfo, Set<String> methodNameSet, MethodDoc methodDoc) {
 
 		AnnotationDesc requestMapping = findAnnotation(methodDoc.annotations(), REQUEST_MAPPING_ANNOTATION_NAME);
 		if (requestMapping == null) {
@@ -67,11 +71,11 @@ public class EndPointCollector {
 		// @RequestMapping(value = { "/auth/oauth" })
 		String[] paths = findAnnotationFieldValues(requestMapping, "value");
 		// @RequestMapping(method = { RequestMethod.GET })
-		String[] methods = findAnnotationFieldValues(requestMapping, "method");
-		if (methods != null) {
-			for (int i = 0; i < methods.length; i++) {
-				if (methods[i].startsWith(REQUEST_METHOD_PACKAGE_PREFIX)) {
-					methods[i] = methods[i].substring(REQUEST_METHOD_PACKAGE_PREFIX.length());
+		String[] httpMethods = findAnnotationFieldValues(requestMapping, "method");
+		if (httpMethods != null) {
+			for (int i = 0; i < httpMethods.length; i++) {
+				if (httpMethods[i].startsWith(REQUEST_METHOD_PACKAGE_PREFIX)) {
+					httpMethods[i] = httpMethods[i].substring(REQUEST_METHOD_PACKAGE_PREFIX.length());
 				}
 			}
 		}
@@ -110,8 +114,15 @@ public class EndPointCollector {
 		if (paramInfos.isEmpty()) {
 			paramInfos = null;
 		}
-		MethodInfo methodInfo = new MethodInfo(methodDoc.name(), methodJavaDoc, javaDocFirstSentence(methodJavaDoc),
-				paths, methods, params, headers, consumes, produces, paramInfos, requestInfo, responseInfo);
+
+		String uniqueName = methodDoc.name();
+		for (int i = 2; !methodNameSet.add(uniqueName); i++) {
+			uniqueName = methodDoc.name() + i;
+		}
+
+		MethodInfo methodInfo =
+				new MethodInfo(methodDoc.name(), uniqueName, methodJavaDoc, javaDocFirstSentence(methodJavaDoc), paths,
+						httpMethods, params, headers, consumes, produces, paramInfos, requestInfo, responseInfo);
 
 		if (classInfo.getPaths() == null) {
 			addClassPathInfo(classInfo, methodInfo, null);
@@ -233,9 +244,16 @@ public class EndPointCollector {
 		Type type = methodDoc.returnType();
 		if (type == null || "void".equals(type.typeName())) {
 			return null;
-		} else {
-			return ContentsInfo.fromResponse(type.typeName(), null, extractFieldInfos(type));
 		}
+
+		String javaDoc = null;
+		if (methodDoc.getRawCommentText() != null) {
+			Matcher matcher = JAVADOC_RETURN_PATTERN.matcher(methodDoc.getRawCommentText());
+			if (matcher.find()) {
+				javaDoc = matcher.group(1);
+			}
+		}
+		return ContentsInfo.fromResponse(type.typeName(), javaDoc, extractFieldInfos(type));
 	}
 
 	/**

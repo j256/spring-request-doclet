@@ -23,6 +23,7 @@ public class TestController {
 	 *            Session-id returned by the oauth processing.
 	 * @param responseCode
 	 *            The enumerated number code which corresponds to the results of the auth processing.
+	 * @return HTML response.
 	 */
 	@RequestMapping(method = RequestMethod.GET, produces = "text/html")
 	public @ResponseBody String sayHello(//
@@ -39,6 +40,7 @@ public class TestController {
 	 *            Session-id returned by the oauth processing.
 	 * @param arg
 	 *            Random argument.
+	 * @return HTML response.
 	 */
 	@RequestMapping(method = RequestMethod.GET, produces = "text/html", params = "arg")
 	public @ResponseBody String sayHello(//

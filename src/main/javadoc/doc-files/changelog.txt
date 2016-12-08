@@ -1,9 +1,12 @@
-0.3 : 12/7/2016
+0.8 : 12/8/2016
+	* Fixed bug with multiple methods with the same name.
+	* Added support for extracting @return information for @ResponseBody
+	* Improved some of the javadoc output.
 
+0.3 : 12/7/2016
 	* Added @RequestBody handling.
 	* Added @ResponseBody information.
 	* Revamped the output to have a per method description file.
 
 0.2 : 11/30/2016
-
 	* Initial public release.

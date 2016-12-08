@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.j256.springrequestdoclet.collector.ClassInfo;
 import com.j256.springrequestdoclet.collector.ContentsInfo;
@@ -35,6 +37,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	private static final String CLASS_METHOD_SUBDIR_HTML = CLASS_SUBDIR + '/' + METHOD_SUBDIR;
 	private static final String CLASS_SUMMARY_FILE = "classes.html";
 	private static final String METHOD_NAME_SUFFIX = "(...)";
+	private static final Pattern JAVADOC_CLEANUP_PATTERN = Pattern.compile("(?sm)^\\s*[@]");
 
 	private Map<String, String> classNameMap = new HashMap<String, String>();
 	private Map<String, String> methodNameMap = new HashMap<String, String>();
@@ -93,7 +96,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 				}
 				out.write("<td> ");
 				MethodInfo methodInfo = endPoint.getMethodInfo();
-				String[] methods = methodInfo.getMethods();
+				String[] methods = methodInfo.getHttpMethods();
 				printArray(out, null, methods);
 				out.write("</td><td> ");
 				String[] params = methodInfo.getParams();
@@ -233,9 +236,6 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 
 		writeHeader("Class " + classInfo.getClassName(), out);
 
-		out.println("<p> The following is documentation for a single class, starting with its javadoc summary.  "
-				+ "The full javadocs (if any) are the bottom. </p>");
-
 		// gather up the methods so we can sort them
 		List<MethodInfo> methodInfoList = new ArrayList<MethodInfo>();
 		Map<MethodInfo, String> methodPathMap = new HashMap<MethodInfo, String>();
@@ -246,18 +246,28 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		// sort by class name
 		Collections.sort(methodInfoList);
 
+		String javaDoc = classInfo.getJavaDoc();
+		if (javaDoc != null && javaDoc.isEmpty()) {
+			javaDoc = null;
+		}
+
+		out.print("<p> The following is documentation for a single class.");
+		if (javaDoc != null) {
+			out.print("The full javadocs are the bottom.");
+		}
+		out.println("</p>");
+
 		String javaDocFirst = classInfo.getJavaDocFirstSentence();
 		if (javaDocFirst != null && !javaDocFirst.isEmpty()) {
 			// NOTE: javadoc might have html which we hope is ok
-			out.println("<p> Javadoc summary: " + javaDocFirst + "</p>");
+			out.println("<p style='margin-left: 2em; margin-right: 2em;'> Javadoc summary: " + javaDocFirst + "</p>");
 		}
 
 		writeMethodInfo(out, classInfo, methodInfoList, methodPathMap, METHOD_SUBDIR);
 
-		String javaDoc = classInfo.getJavaDoc();
-		if (javaDoc != null && !javaDoc.isEmpty() && !javaDoc.equals(javaDocFirst)) {
+		if (javaDoc != null && !javaDoc.equals(javaDocFirst)) {
 			// NOTE: javadoc might have html which we hope is ok
-			out.println("<p> " + javaDoc + "</p>");
+			printJavaDocs(out, javaDoc);
 		}
 
 		writeTrailer(out, "../");
@@ -283,11 +293,19 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 
 		ClassInfo classInfo = endPoint.getClassInfo();
 		MethodInfo methodInfo = endPoint.getMethodInfo();
-		writeHeader("Method " + classInfo.getClassName() + "." + methodInfo.getJavaMethodName() + METHOD_NAME_SUFFIX,
+		writeHeader("Method " + classInfo.getClassName() + ". " + methodInfo.getJavaMethodName() + METHOD_NAME_SUFFIX,
 				out);
 
-		out.println("<p> The following is documentation for a single method.  "
-				+ "The full javadocs (if any) are the bottom. </p>");
+		String javaDoc = methodInfo.getJavaDoc();
+		if (javaDoc != null && javaDoc.isEmpty()) {
+			javaDoc = null;
+		}
+
+		out.print("<p> The following is documentation for a single method.");
+		if (javaDoc != null) {
+			out.print("The full javadocs are the bottom.");
+		}
+		out.println("</p>");
 
 		writeMethodInfo(out, classInfo, Collections.singletonList(methodInfo),
 				Collections.singletonMap(methodInfo, endPoint.getPath()), null);
@@ -303,13 +321,29 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			writeContentsInfo(out, methodInfo, methodInfo.getResponseInfo(), "Response Fields Returned to Client");
 		}
 
-		String javaDoc = methodInfo.getJavaDoc();
-		if (javaDoc != null && !javaDoc.isEmpty()) {
+		if (javaDoc != null) {
 			// NOTE: javadoc might have html which we hope is ok
-			out.println("<p> " + javaDoc + "</p>");
+			printJavaDocs(out, javaDoc);
 		}
 
 		writeTrailer(out, "../../");
+	}
+
+	private void printJavaDocs(PrintWriter out, String javaDoc) {
+		if (javaDoc == null || javaDoc.isEmpty()) {
+			return;
+		}
+
+		Matcher matcher = JAVADOC_CLEANUP_PATTERN.matcher(javaDoc);
+		out.print("<p style='margin-left: 2em; margin-right: 2em;'>");
+		int start = 0;
+		while (matcher.find(start)) {
+			out.print(javaDoc.substring(start, matcher.start()));
+			out.println("<br />");
+			start = matcher.start() + 1;
+		}
+		out.print(javaDoc.substring(start));
+		out.println("</p>");
 	}
 
 	private void writeMethodInfo(PrintWriter out, ClassInfo classInfo, List<MethodInfo> methodInfoList,
@@ -340,7 +374,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		out.write("</td><td>");
 		writeIfNotNull(out, methodPath, "&nbsp;");
 		out.write("</td><td>");
-		String[] methods = methodInfo.getMethods();
+		String[] methods = methodInfo.getHttpMethods();
 		printArray(out, null, methods);
 		out.write("</td><td> ");
 		String[] params = methodInfo.getParams();
@@ -529,8 +563,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	}
 
 	private String javaClassMathodNameToPath(ClassInfo classInfo, MethodInfo methodInfo) {
-		return findUniquePath(classInfo.getTypeName() + '.' + methodInfo.getJavaMethodName(), methodNameMap,
-				methodPathSet);
+		return findUniquePath(classInfo.getTypeName() + '.' + methodInfo.getUniqueName(), methodNameMap, methodPathSet);
 	}
 
 	private String findUniquePath(String key, Map<String, String> nameMap, Set<String> pathSet) {

@@ -24,7 +24,7 @@
 							<docletArtifact>
 								<groupId>com.j256.spring-request-doclet</groupId>
 								<artifactId>spring-request-doclet</artifactId>
-								<version>0.3-SNAPSHOT</version>
+								<version>0.4-SNAPSHOT</version>
 							</docletArtifact>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<destDir>spring-request-docs</destDir>
