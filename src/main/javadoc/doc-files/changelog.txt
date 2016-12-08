@@ -1,8 +1,5 @@
-0.5 : 12/8/2016
-	* Handling of array and return params.
-	* Some better javadoc output formatting. 
-
 0.4 : 12/8/2016
+	* Handling of array and return params.
 	* Fixed bug with multiple methods with the same name.
 	* Added support for extracting @return information for @ResponseBody
 	* Improved some of the javadoc output.
