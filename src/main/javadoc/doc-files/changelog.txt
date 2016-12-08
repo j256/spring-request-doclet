@@ -1,4 +1,4 @@
-0.8 : 12/8/2016
+0.4 : 12/8/2016
 	* Fixed bug with multiple methods with the same name.
 	* Added support for extracting @return information for @ResponseBody
 	* Improved some of the javadoc output.
