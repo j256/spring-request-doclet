@@ -233,8 +233,8 @@ public class EndPointCollector {
 			return null;
 		} else {
 			String javaDoc = extractParamDocs(methodJavaDoc, param.name());
-			String typeName = generateTypeName(param.type());
-			return ContentsInfo.fromRequestBody(param.name(), typeName, javaDoc, extractFieldInfos(param.type()));
+			return ContentsInfo.fromRequestBody(param.name(), generateTypeName(param.type()), javaDoc,
+					extractFieldInfos(param.type()));
 		}
 	}
 
@@ -259,8 +259,7 @@ public class EndPointCollector {
 			}
 		}
 
-		String typeName = generateTypeName(type);
-		return ContentsInfo.fromResponse(typeName, javaDoc, extractFieldInfos(type));
+		return ContentsInfo.fromResponse(generateTypeName(type), javaDoc, extractFieldInfos(type));
 	}
 
 	private String generateTypeName(Type type) {
@@ -306,7 +305,7 @@ public class EndPointCollector {
 				fieldName = Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
 			}
 			if (fieldName != null) {
-				fieldInfos.add(new FieldInfo(fieldName, methodDoc.returnType().typeName(),
+				fieldInfos.add(new FieldInfo(fieldName, generateTypeName(methodDoc.returnType()),
 						javaDocFirstSentence(methodDoc.getRawCommentText())));
 			}
 		}
