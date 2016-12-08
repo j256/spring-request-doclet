@@ -57,8 +57,20 @@ public class TestController {
 	 *            Request body that encapsulates a number of fields.
 	 * @return HTML results from the operation.
 	 */
-	@RequestMapping(method = RequestMethod.POST, produces = "text/html", consumes = "application/json")
+	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "text/html")
 	public @ResponseBody String objectPost(@RequestBody UpdateUser updateUser) {
+		return null;
+	}
+
+	/**
+	 * Demonstration of a method which has an array parameter and return.
+	 * 
+	 * @param tokens
+	 *            Multiple request tokens.
+	 * @return Array of values for the tokens.
+	 */
+	@RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public @ResponseBody int[] tokenValues(@RequestParam("token") String[] tokens) {
 		return null;
 	}
 

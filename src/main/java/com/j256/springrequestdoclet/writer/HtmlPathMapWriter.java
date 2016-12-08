@@ -127,11 +127,11 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 				out.write("</td><td> ");
 				ClassInfo classInfo = endPoint.getClassInfo();
 				String classFilePath = javaClassNameToPath(classInfo);
-				out.write("<a href='" + CLASS_SUBDIR + File.separatorChar + classFilePath + ".html'>"
+				out.write("<a href='" + CLASS_SUBDIR + File.separatorChar + classFilePath + "'>"
 						+ htmlEscape(classInfo.getClassName()) + "</a>");
 				out.write("</td><td> ");
 				String classMethodFileName = javaClassMathodNameToPath(classInfo, methodInfo);
-				out.write("<a href='" + CLASS_METHOD_SUBDIR_HTML + File.separatorChar + classMethodFileName + ".html'>"
+				out.write("<a href='" + CLASS_METHOD_SUBDIR_HTML + File.separatorChar + classMethodFileName + "'>"
 						+ htmlEscape(methodInfo.getJavaMethodName()) + METHOD_NAME_SUFFIX + "</a>");
 				out.write("</td><td> ");
 				writeIfNotNull(out, methodInfo.getJavaDocFirstSentence(), "&nbsp;");
@@ -181,7 +181,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		out.println("<tr><th> Class </th><th> Paths </th><th> Description </th></tr>");
 		for (ClassInfo classInfo : classInfoList) {
 			String classFilePath = javaClassNameToPath(classInfo);
-			out.write("<tr><td><a href='" + CLASS_SUBDIR + File.separatorChar + classFilePath + ".html'>"
+			out.write("<tr><td><a href='" + CLASS_SUBDIR + File.separatorChar + classFilePath + "'>"
 					+ htmlEscape(classInfo.getClassName()) + "</a></td>");
 			out.write("<td>");
 			boolean first = true;
@@ -224,7 +224,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 
 	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints) throws IOException {
 		String classFilePath = javaClassNameToPath(classInfo);
-		PrintWriter out = new PrintWriter(CLASS_SUBDIR + File.separatorChar + classFilePath + ".html");
+		PrintWriter out = new PrintWriter(CLASS_SUBDIR + File.separatorChar + classFilePath);
 		try {
 			writeClassFile(classInfo, endPoints, out);
 		} finally {
@@ -253,14 +253,14 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 
 		out.print("<p> The following is documentation for a single class.");
 		if (javaDoc != null) {
-			out.print("The full javadocs are the bottom.");
+			out.print("The full javadocs are below.");
 		}
 		out.println("</p>");
 
 		String javaDocFirst = classInfo.getJavaDocFirstSentence();
 		if (javaDocFirst != null && !javaDocFirst.isEmpty()) {
 			// NOTE: javadoc might have html which we hope is ok
-			out.println("<p style='margin-left: 2em; margin-right: 2em;'> Javadoc summary: " + javaDocFirst + "</p>");
+			out.println("<p class='bc'> Javadoc summary: " + javaDocFirst + "</p>");
 		}
 
 		writeMethodInfo(out, classInfo, methodInfoList, methodPathMap, METHOD_SUBDIR);
@@ -279,7 +279,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		for (List<EndPoint> pathEndPoint : pathEndPoints) {
 			for (EndPoint endPoint : pathEndPoint) {
 				String classMethodPath = javaClassMathodNameToPath(endPoint.getClassInfo(), endPoint.getMethodInfo());
-				PrintWriter out = new PrintWriter(CLASS_METHOD_SUBDIR + File.separatorChar + classMethodPath + ".html");
+				PrintWriter out = new PrintWriter(CLASS_METHOD_SUBDIR + File.separatorChar + classMethodPath);
 				try {
 					writeMethodFile(endPoint, out);
 				} finally {
@@ -301,11 +301,18 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			javaDoc = null;
 		}
 
-		out.print("<p> The following is documentation for a single method.");
+		String classFilePath = javaClassNameToPath(classInfo);
+		out.print("<p> The following is documentation for a single method from the class <a href='../" + classFilePath
+				+ "'>" + htmlEscape(classInfo.getClassName()) + "</a>.");
 		if (javaDoc != null) {
-			out.print("The full javadocs are the bottom.");
+			out.print(" The full javadocs are below.");
 		}
-		out.println("</p>");
+		out.println(" </p>");
+
+		String javaDocFirst = classInfo.getJavaDocFirstSentence();
+		if (javaDocFirst != null && !javaDocFirst.isEmpty()) {
+			out.println("<p class='bc'> Javadoc summary: " + javaDocFirst + "</p>");
+		}
 
 		writeMethodInfo(out, classInfo, Collections.singletonList(methodInfo),
 				Collections.singletonMap(methodInfo, endPoint.getPath()), null);
@@ -335,7 +342,8 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		}
 
 		Matcher matcher = JAVADOC_CLEANUP_PATTERN.matcher(javaDoc);
-		out.print("<p style='margin-left: 2em; margin-right: 2em;'>");
+		out.println("<p> Full javadocs: </p>");
+		out.print("<p class='bc'>");
 		int start = 0;
 		while (matcher.find(start)) {
 			out.print(javaDoc.substring(start, matcher.start()));
@@ -365,7 +373,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		out.write("<tr><td>");
 		if (subDir != null) {
 			String classMethodFileName = javaClassMathodNameToPath(classInfo, methodInfo);
-			out.write("<a href='" + subDir + '/' + classMethodFileName + ".html'>");
+			out.write("<a href='" + subDir + '/' + classMethodFileName + "'>");
 		}
 		out.write(htmlEscape(methodInfo.getJavaMethodName()) + METHOD_NAME_SUFFIX);
 		if (subDir != null) {
@@ -444,7 +452,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		if (fieldInfos != null && !fieldInfos.isEmpty()) {
 			height = fieldInfos.size();
 		}
-		out.write("<td rowspan=\"" + height + "\"> " + htmlEscape(methodInfo.getJavaMethodName()) + METHOD_NAME_SUFFIX
+		out.write("<td rowspan='" + height + "'> " + htmlEscape(methodInfo.getJavaMethodName()) + METHOD_NAME_SUFFIX
 				+ "</td>");
 		if (fieldInfos == null || fieldInfos.isEmpty()) {
 			out.write("<td>&nbsp;</td>");
@@ -471,12 +479,12 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	}
 
 	private void writeHeader(String title, PrintWriter out) {
-		out.println("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>");
-		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"");
-		out.println("    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-		out.println("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
+		out.println("<?xml version='1.0' encoding='ISO-8859-1' ?>");
+		out.println("<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN'");
+		out.println("    'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>");
+		out.println("<html xmlns='http://www.w3.org/1999/xhtml'>");
 		out.println("<head>");
-		out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />");
+		out.println("<meta http-equiv='Content-Type' content='text/html; charset=ISO-8859-1' />");
 		out.println("<title> " + htmlEscape(title) + " </title>");
 		out.println("<style>");
 		out.println("   table { border-collapse: collapse; }");
@@ -484,6 +492,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		out.println("   th, td { padding: 5px; }");
 		out.println("   tr:nth-child(even) { background-color: #f2f2f2; }");
 		out.println("   body { width: 80%; }");
+		out.println("   .bc { margin-left: 2em; margin-right: 2em; }");
 		out.println("</style>");
 		out.println("</head>");
 		out.println("<body>");
@@ -581,9 +590,9 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			}
 		}
 		String rawPath = sb.toString();
-		path = rawPath;
+		path = rawPath + ".html";
 		for (int i = 2; !pathSet.add(path); i++) {
-			path = rawPath + i;
+			path = (rawPath + i) + ".html";
 		}
 		nameMap.put(key, path);
 		return path;

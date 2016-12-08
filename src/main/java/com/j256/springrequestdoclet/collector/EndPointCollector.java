@@ -182,6 +182,7 @@ public class EndPointCollector {
 		String requestHeaderName = null;
 
 		String javaDoc = extractParamDocs(methodJavaDoc, param.name());
+		String typeName = generateTypeName(param.type());
 
 		// @RequestParam("schoolId) long schoolId, ...
 		AnnotationDesc requestParam = findAnnotation(param.annotations(), REQUEST_PARAM_ANNOTATION_NAME);
@@ -193,15 +194,14 @@ public class EndPointCollector {
 				required = Boolean.parseBoolean(requiredStr);
 			}
 			String defaultValue = findAnnotationFieldValue(requestParam, "defaultValue");
-			return ParamInfo.fromRequestParam(param.name(), param.typeName(), queryParamName, required, defaultValue,
-					javaDoc);
+			return ParamInfo.fromRequestParam(param.name(), typeName, queryParamName, required, defaultValue, javaDoc);
 		}
 
 		// @RequestMapping("/request/{schoolId}") public void request(@PathVariable("schoolId) long schoolId)
 		AnnotationDesc pathVariable = findAnnotation(param.annotations(), PATH_VARIABLE_ANNOTATION_NAME);
 		if (pathVariable != null) {
 			pathVariableName = findAnnotationFieldValue(pathVariable, "value");
-			return ParamInfo.fromPathVariable(param.name(), param.typeName(), pathVariableName, true, null, javaDoc);
+			return ParamInfo.fromPathVariable(param.name(), typeName, pathVariableName, true, null, javaDoc);
 		}
 
 		// @RequestHeader("Content-Type") String contentType, ...
@@ -214,8 +214,8 @@ public class EndPointCollector {
 				required = Boolean.parseBoolean(requiredStr);
 			}
 			String defaultValue = findAnnotationFieldValue(requestParam, "defaultValue");
-			return ParamInfo.fromRequestHeader(param.name(), param.typeName(), requestHeaderName, required,
-					defaultValue, javaDoc);
+			return ParamInfo.fromRequestHeader(param.name(), typeName, requestHeaderName, required, defaultValue,
+					javaDoc);
 		}
 
 		return null;
@@ -226,14 +226,15 @@ public class EndPointCollector {
 	 */
 	private ContentsInfo handleRequestBodyParam(Parameter param, String methodJavaDoc) {
 
-		// @RequestBody SomeObject someObject
+		// Ex: public void method(@RequestBody SomeObject someObject)
+
 		AnnotationDesc requestBody = findAnnotation(param.annotations(), REQUEST_BODY_ANNOTATION_NAME);
 		if (requestBody == null) {
 			return null;
 		} else {
 			String javaDoc = extractParamDocs(methodJavaDoc, param.name());
-			return ContentsInfo.fromRequestBody(param.name(), param.typeName(), javaDoc,
-					extractFieldInfos(param.type()));
+			String typeName = generateTypeName(param.type());
+			return ContentsInfo.fromRequestBody(param.name(), typeName, javaDoc, extractFieldInfos(param.type()));
 		}
 	}
 
@@ -241,19 +242,34 @@ public class EndPointCollector {
 	 * Process the return type from a method marked (probably) with @ResponseBody.
 	 */
 	private ContentsInfo handleResponseBody(MethodDoc methodDoc) {
+
+		// Ex: public @ResponseBody SomeObject method() {
+
 		Type type = methodDoc.returnType();
 		if (type == null || "void".equals(type.typeName())) {
 			return null;
 		}
 
+		// try to extract the @return javadoc information
 		String javaDoc = null;
 		if (methodDoc.getRawCommentText() != null) {
 			Matcher matcher = JAVADOC_RETURN_PATTERN.matcher(methodDoc.getRawCommentText());
 			if (matcher.find()) {
-				javaDoc = matcher.group(1);
+				javaDoc = javaDocFirstSentence(matcher.group(1));
 			}
 		}
-		return ContentsInfo.fromResponse(type.typeName(), javaDoc, extractFieldInfos(type));
+
+		String typeName = generateTypeName(type);
+		return ContentsInfo.fromResponse(typeName, javaDoc, extractFieldInfos(type));
+	}
+
+	private String generateTypeName(Type type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(type.typeName());
+		if (type.dimension() != null) {
+			sb.append(type.dimension());
+		}
+		return sb.toString();
 	}
 
 	/**
