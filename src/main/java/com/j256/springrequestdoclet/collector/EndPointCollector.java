@@ -372,6 +372,9 @@ public class EndPointCollector {
 	 * @return String value associated with the field or null if not found.
 	 */
 	private String findAnnotationFieldValue(AnnotationDesc annotation, String fieldName) {
+		if (annotation == null || annotation.elementValues() == null) {
+			return null;
+		}
 		for (ElementValuePair pair : annotation.elementValues()) {
 			// String value
 			String name = pair.element().name();

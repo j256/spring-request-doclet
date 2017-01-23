@@ -1,3 +1,6 @@
+0.5 : 1/23/2017
+	* Fixed a NPE
+
 0.4 : 12/8/2016
 	* Handling of array and return params.
 	* Fixed bug with multiple methods with the same name.
