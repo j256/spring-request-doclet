@@ -42,7 +42,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	private static final String CLASS_SUMMARY_FILE = "classes.html";
 	private static final String METHOD_NAME_SUFFIX = "(...)";
 	private static final String INDEX_FILE_NAME = "index.html";
-	private static final String PATH_SUMMARY_SEPARATE_FILE = "pathSummary.html";
+	private static final String PATH_SUMMARY_SEPARATE_FILE = "paths.html";
 	private static final Pattern JAVADOC_CLEANUP_PATTERN = Pattern.compile("(?sm)^\\s*[@]");
 
 	private Map<String, String> classNameMap = new HashMap<String, String>();
