@@ -1,5 +1,6 @@
 package com.j256.springrequestdoclet.writer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -16,5 +17,5 @@ public interface EndPointMapWriter {
 	/**
 	 * Write our end-point information out.
 	 */
-	public void write(Map<String, List<EndPoint>> endPointMap) throws IOException;
+	public void write(Map<String, List<EndPoint>> endPointMap, File rootDocDir) throws IOException;
 }

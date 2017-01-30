@@ -24,8 +24,10 @@
 							<docletArtifact>
 								<groupId>com.j256.spring-request-doclet</groupId>
 								<artifactId>spring-request-doclet</artifactId>
-								<version>0.5-SNAPSHOT</version>
+								<version>0.6-SNAPSHOT</version>
 							</docletArtifact>
+							<!-- seems to need to be relative to target/site/spring-request-docs -->
+							<additionalparam>-r ../../../src/main/doc/spring-request-doclet</additionalparam>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<destDir>spring-request-docs</destDir>
 						</configuration>

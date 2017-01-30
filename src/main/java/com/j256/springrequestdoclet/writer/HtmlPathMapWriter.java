@@ -1,8 +1,12 @@
 package com.j256.springrequestdoclet.writer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +41,8 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	private static final String CLASS_METHOD_SUBDIR_HTML = CLASS_SUBDIR + '/' + METHOD_SUBDIR;
 	private static final String CLASS_SUMMARY_FILE = "classes.html";
 	private static final String METHOD_NAME_SUFFIX = "(...)";
+	private static final String INDEX_FILE_NAME = "index.html";
+	private static final String PATH_SUMMARY_SEPARATE_FILE = "pathSummary.html";
 	private static final Pattern JAVADOC_CLEANUP_PATTERN = Pattern.compile("(?sm)^\\s*[@]");
 
 	private Map<String, String> classNameMap = new HashMap<String, String>();
@@ -45,27 +51,91 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 	private Set<String> methodPathSet = new HashSet<String>();
 
 	@Override
-	public void write(Map<String, List<EndPoint>> endPointMap) throws IOException {
-		// write a file for each class method, we do this first to build the methodNameMap
-		writeMethodFiles(endPointMap.values());
+	public void write(Map<String, List<EndPoint>> endPointMap, File rootDir) throws IOException {
+		// see if we already have an index.html
+		boolean rootDirIndex = false;
+		if (rootDir != null) {
+			rootDirIndex = copyFiles(new File("."), rootDir);
+		}
 		// write a path summary into our index.html
-		writePathSummary(endPointMap, new File("index.html"));
+		String summaryPath = INDEX_FILE_NAME;
+		if (rootDirIndex) {
+			summaryPath = PATH_SUMMARY_SEPARATE_FILE;
+		}
+		// write a file for each class method, we do this first to build the methodNameMap
+		writeMethodFiles(endPointMap.values(), summaryPath);
+		writePathSummary(endPointMap, summaryPath, new File(summaryPath));
 		// write an index.html for all of the paths linking to path details
-		writeClassSummary(endPointMap, new File(CLASS_SUMMARY_FILE));
+		writeClassSummary(endPointMap, summaryPath, new File(CLASS_SUMMARY_FILE));
 		// write a file for each class
-		writeClassFiles(endPointMap);
+		writeClassFiles(endPointMap, summaryPath);
 	}
 
-	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, File file) throws IOException {
+	/**
+	 * Copy a file into the current directory. This method goes recursive.
+	 * 
+	 * @return true if the directory contains an index.html.
+	 */
+	private boolean copyFiles(File dirFile, File sourceDir) throws IOException {
+		boolean indexFile = false;
+		if (!dirFile.isDirectory()) {
+			dirFile.mkdirs();
+			if (!dirFile.isDirectory()) {
+				throw new IOException("Could not create directory: " + dirFile);
+			}
+		}
+		for (File file : sourceDir.listFiles()) {
+			if (file.isDirectory()) {
+				// NOTE: only the root directory has the index
+				copyFiles(new File(dirFile, file.getName()), file);
+			} else {
+				copyFile(file, dirFile);
+				if (file.getName().equals(INDEX_FILE_NAME)) {
+					indexFile = true;
+				}
+			}
+		}
+		return indexFile;
+	}
+
+	/**
+	 * Copy a file into the current directory.
+	 */
+	private void copyFile(File sourceFile, File dirFile) throws IOException {
+		InputStream input = null;
+		OutputStream output = null;
+		try {
+			input = new FileInputStream(sourceFile);
+			output = new FileOutputStream(new File(dirFile, sourceFile.getName()));
+			byte[] buffer = new byte[4096];
+			while (true) {
+				int numBytes = input.read(buffer, 0, buffer.length);
+				if (numBytes < 0) {
+					break;
+				}
+				output.write(buffer, 0, numBytes);
+			}
+		} finally {
+			if (input != null) {
+				input.close();
+			}
+			if (output != null) {
+				output.close();
+			}
+		}
+	}
+
+	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String summaryPath, File file)
+			throws IOException {
 		PrintWriter out = new PrintWriter(file);
 		try {
-			writePathSummary(endPointMap, out);
+			writePathSummary(endPointMap, summaryPath, out);
 		} finally {
 			out.close();
 		}
 	}
 
-	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, PrintWriter out) {
+	private void writePathSummary(Map<String, List<EndPoint>> endPointMap, String summaryPath, PrintWriter out) {
 
 		writeHeader("Path Summary", out);
 
@@ -140,19 +210,20 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		}
 
 		out.println("</table>");
-		writeTrailer(out, null);
+		writeTrailer(out, null, summaryPath);
 	}
 
-	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, File file) throws IOException {
+	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String summaryPath, File file)
+			throws IOException {
 		PrintWriter out = new PrintWriter(file);
 		try {
-			writeClassSummary(endPointMap, out);
+			writeClassSummary(endPointMap, summaryPath, out);
 		} finally {
 			out.close();
 		}
 	}
 
-	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, PrintWriter out) {
+	private void writeClassSummary(Map<String, List<EndPoint>> endPointMap, String summaryPath, PrintWriter out) {
 
 		writeHeader("Class Summary", out);
 
@@ -162,6 +233,9 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		// make a map of class -> paths
 		Map<ClassInfo, Set<String>> classInfoMap = new HashMap<ClassInfo, Set<String>>();
 		for (Entry<String, List<EndPoint>> entry : endPointMap.entrySet()) {
+			if (entry.getKey() == null) {
+				System.out.println("ERROR: key is null for: " + entry);
+			}
 			for (EndPoint endPoint : entry.getValue()) {
 				ClassInfo classInfo = endPoint.getClassInfo();
 				Set<String> pathList = classInfoMap.get(classInfo);
@@ -186,6 +260,9 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			out.write("<td>");
 			boolean first = true;
 			for (String path : classInfoMap.get(classInfo)) {
+				if (path == null) {
+					continue;
+				}
 				if (first) {
 					first = false;
 				} else {
@@ -198,10 +275,10 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			out.println("</td></tr>");
 		}
 		out.println("</table>");
-		writeTrailer(out, null);
+		writeTrailer(out, null, summaryPath);
 	}
 
-	private void writeClassFiles(Map<String, List<EndPoint>> endPointMap) throws IOException {
+	private void writeClassFiles(Map<String, List<EndPoint>> endPointMap, String summaryPath) throws IOException {
 		File classSubdir = new File(CLASS_SUBDIR);
 		classSubdir.mkdirs();
 		Map<ClassInfo, List<EndPoint>> classInfoMap = new HashMap<ClassInfo, List<EndPoint>>();
@@ -218,21 +295,21 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		}
 
 		for (Entry<ClassInfo, List<EndPoint>> entry : classInfoMap.entrySet()) {
-			writeClassFile(entry.getKey(), entry.getValue());
+			writeClassFile(entry.getKey(), entry.getValue(), summaryPath);
 		}
 	}
 
-	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints) throws IOException {
+	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints, String summaryPath) throws IOException {
 		String classFilePath = javaClassNameToPath(classInfo);
 		PrintWriter out = new PrintWriter(CLASS_SUBDIR + File.separatorChar + classFilePath);
 		try {
-			writeClassFile(classInfo, endPoints, out);
+			writeClassFile(classInfo, endPoints, summaryPath, out);
 		} finally {
 			out.close();
 		}
 	}
 
-	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints, PrintWriter out) {
+	private void writeClassFile(ClassInfo classInfo, List<EndPoint> endPoints, String summaryPath, PrintWriter out) {
 
 		writeHeader("Class " + classInfo.getClassName(), out);
 
@@ -270,10 +347,11 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			printJavaDocs(out, javaDoc);
 		}
 
-		writeTrailer(out, "../");
+		writeTrailer(out, "../", summaryPath);
 	}
 
-	private void writeMethodFiles(Collection<List<EndPoint>> pathEndPoints) throws FileNotFoundException {
+	private void writeMethodFiles(Collection<List<EndPoint>> pathEndPoints, String summaryPath)
+			throws FileNotFoundException {
 		File methodSubdir = new File(CLASS_METHOD_SUBDIR);
 		methodSubdir.mkdirs();
 		for (List<EndPoint> pathEndPoint : pathEndPoints) {
@@ -281,7 +359,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 				String classMethodPath = javaClassMathodNameToPath(endPoint.getClassInfo(), endPoint.getMethodInfo());
 				PrintWriter out = new PrintWriter(CLASS_METHOD_SUBDIR + File.separatorChar + classMethodPath);
 				try {
-					writeMethodFile(endPoint, out);
+					writeMethodFile(endPoint, summaryPath, out);
 				} finally {
 					out.close();
 				}
@@ -289,7 +367,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		}
 	}
 
-	private void writeMethodFile(EndPoint endPoint, PrintWriter out) {
+	private void writeMethodFile(EndPoint endPoint, String summaryPath, PrintWriter out) {
 
 		ClassInfo classInfo = endPoint.getClassInfo();
 		MethodInfo methodInfo = endPoint.getMethodInfo();
@@ -333,7 +411,7 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 			printJavaDocs(out, javaDoc);
 		}
 
-		writeTrailer(out, "../../");
+		writeTrailer(out, "../../", summaryPath);
 	}
 
 	private void printJavaDocs(PrintWriter out, String javaDoc) {
@@ -499,12 +577,18 @@ public class HtmlPathMapWriter implements EndPointMapWriter {
 		out.println("<h1> " + htmlEscape(title) + " </h1>");
 	}
 
-	private void writeTrailer(PrintWriter out, String relativePathToRoot) {
+	private void writeTrailer(PrintWriter out, String relativePathToRoot, String pathSummaryFileName) {
 		if (relativePathToRoot == null) {
 			relativePathToRoot = "./";
 		}
-		out.println("<p> <a href='" + relativePathToRoot + "index.html'>Path summary<a> &nbsp;&nbsp;&nbsp;&nbsp;"
-				+ "  <a href='" + relativePathToRoot + CLASS_SUMMARY_FILE + "'>Class summary</a> </p>");
+		if (pathSummaryFileName.equals(INDEX_FILE_NAME)) {
+			out.println("<p> <a href='" + relativePathToRoot + INDEX_FILE_NAME + "'>Path Summary<a>");
+		} else {
+			out.println("<p> <a href='" + relativePathToRoot + INDEX_FILE_NAME + "'>Top<a> &nbsp;&nbsp;&nbsp;&nbsp;" //
+					+ "<a href='" + relativePathToRoot + PATH_SUMMARY_SEPARATE_FILE + "'>Path Summary<a>");
+		}
+		out.println(" &nbsp;&nbsp;&nbsp;&nbsp; <a href='" + relativePathToRoot + CLASS_SUMMARY_FILE
+				+ "'>Class summary</a> </p>");
 		out.println("<p style='font-size: 75%;'> Generated by <a "
 				+ "href='http://256stuff.com/sources/spring-request-doclet/'>Spring Request Doclet</a> package. </p>");
 		out.println("</body>");

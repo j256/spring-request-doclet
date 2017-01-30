@@ -1,5 +1,6 @@
 package com.j256.springrequestdoclet;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,11 @@ import com.sun.javadoc.RootDoc;
  */
 public class SpringRequestDoclet extends Doclet {
 
+	private static final String ROOT_DIR_ARG = "-r";
+
 	private static HtmlPathMapWriter writer = new HtmlPathMapWriter();
+
+	private static String rootDirPath;
 
 	/**
 	 * Actually do the processing of the variable class information so we can general the documentation output.
@@ -35,10 +40,21 @@ public class SpringRequestDoclet extends Doclet {
 			collector.processClass(classDoc);
 		}
 
+		File rootDocDir = null;
+		if (rootDirPath != null) {
+			rootDocDir = new File(rootDirPath);
+			if (!rootDocDir.isDirectory()) {
+				System.err.println("Could not find root directory: " + rootDirPath);
+				String userDirProp = System.getProperty("user.dir");
+				System.err.println("user.dir property = " + userDirProp);
+				return false;
+			}
+		}
+
 		// now write out all of the documentation we've collected
 		Map<String, List<EndPoint>> endPointMap = collector.getPathInfoMap();
 		try {
-			writer.write(endPointMap);
+			writer.write(endPointMap, rootDocDir);
 			return true;
 		} catch (IOException ioe) {
 			// print out the exception and return error
@@ -64,15 +80,14 @@ public class SpringRequestDoclet extends Doclet {
 	 * @see Doclet#optionLength(String)
 	 */
 	public static int optionLength(String option) {
-		// this allows other unknown options
-		return 1;
-
-		// NOTE: if we were processing arguments
-		// if ("-o".equals(option)) {
-		// // -o + argument
-		// return 2;
-		// }
-		// return 0; means option unknown
+		if (ROOT_DIR_ARG.equals(option)) {
+			// param + argument
+			return 2;
+		} else {
+			// this allows other unknown options
+			return 1;
+			// return 0; means option unknown
+		}
 	}
 
 	/**
@@ -83,13 +98,15 @@ public class SpringRequestDoclet extends Doclet {
 	 * @see Doclet#validOptions(String[][], DocErrorReporter)
 	 */
 	public static boolean validOptions(String[][] options, DocErrorReporter docErrorReporter) {
-		// for (int optCount = 0; optCount < options.length; optCount++) {
-		// for (String arg : options[optCount]) {
-		// if ("-o".equals(arg)) {
-		// ...
-		// }
-		// }
-		// }
+		for (int optCount = 0; optCount < options.length; optCount++) {
+			if (ROOT_DIR_ARG.equals(options[optCount][0])) {
+				if (options[optCount].length < 2) {
+					docErrorReporter.printError("No argument specified for: " + ROOT_DIR_ARG);
+					return false;
+				}
+				rootDirPath = options[optCount][1];
+			}
+		}
 		return true;
 	}
 }

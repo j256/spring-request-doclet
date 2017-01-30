@@ -24,7 +24,7 @@ For sample output, see this hiearchy: http://256stuff.com/sources/spring-request
 HOW TO USE WITH MAVEN
 
 To use this doclet you will need to include something like the following into your Maven pom.xml and
-execute 'mvn site' or run the javadoc command by hand.
+execute 'mvn site:site'.
 
   <reporting>
     <plugins>
@@ -55,3 +55,40 @@ execute 'mvn site' or run the javadoc command by hand.
       </plugin>
     </plugins>
   </reporting>
+
+Once you run site:site, the directory target/site/spring-request-docs will have been created.    You can
+also run 'mvn site:site site:jar' to package up a target/*-site.jar with the site documentation.
+
+OPTIONAL ROOT DOCUMENTATION
+
+By default the doclet will generate request details which include a path summary, class summary, class details.
+and method details files.  If you'd like, you can specify a small hierarchy of custom documentation that can be
+used to provide more generic information as an introduction to the requests handled as opposed to the details
+from the classes.
+
+To add the custom documentation, you specificy the -r option with a relative directory path.  Something like:
+
+  <reportSet>
+    <id>spring-request-doclet</id>
+    ...
+    <configuration>
+      <!-- seems to need to be relative to target/site/spring-request-docs -->
+      <additionalparam>-r ../../../src/main/doc/spring-request-doclet</additionalparam>
+      ...
+    </configuration>
+  </reportSet>
+
+For example, if you have:
+
+	src/main/doc/spring-request-doclet/index.html
+	src/main/doc/spring-request-doclet/overview/index.html
+	src/main/doc/spring-request-doclet/overview/details.html
+
+then these files will be copied into:
+
+	target/site/spring-request-docs/index.html
+	target/site/spring-request-docs/overview/index.html
+	target/site/spring-request-docs/overview/details.html
+
+By default the path-summary file is written to index.html so if you specify a replacement index.html you should
+include a link to the pathSummary.html file.
