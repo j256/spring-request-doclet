@@ -2,7 +2,7 @@ This package provides a simple doclet for auto-generating documentation using Ja
 specifically for tracking spring's web requests.
 
 * For more information, visit the [Spring Request Doclet home page](http://256stuff.com/sources/spring-request-doclet/).	
-* Browse the code on the [git repository](https://github.com/j256/spring-request-doclet).  [![CircleCI](https://circleci.com/gh/j256/spring-request-doclet.svg?style=svg)](https://circleci.com/gh/j256/spring-request-doclet)
+* Browse the code on the [git repository](https://github.com/j256/spring-request-doclet).
 * Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.spring-request-doclet/spring-request-doclet/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.spring-request-doclet/spring-request-doclet/)
 
 Enjoy,
