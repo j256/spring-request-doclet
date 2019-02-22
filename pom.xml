@@ -7,11 +7,12 @@
 	<packaging>jar</packaging>
 	<name>Spring Request Doclet</name>
 	<url>http://256stuff.com/sources/spring-request-doclet/</url>
-	<description>Spring Web Request Doclet Documentation Generator</description>
+	<description>Spring Web Request Doclet documentation generator</description>
 	<licenses>
 		<license>
 			<name>ISC License</name>
 			<distribution>repo</distribution>
+			<url>https://opensource.org/licenses/ISC</url>
 		</license>
 	</licenses>
 	<parent>
