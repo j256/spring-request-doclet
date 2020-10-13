@@ -25,7 +25,7 @@
 		<sun.tools-version>1.6.0</sun.tools-version>
 		<!-- test dependency versions -->
 		<easymock-version>3.4</easymock-version>
-		<junit-version>4.8.1</junit-version>
+		<junit-version>4.13.1</junit-version>
 	</properties>
 	<scm>
 		<url>https://github.com/j256/spring-request-doclet</url>
