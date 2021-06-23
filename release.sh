@@ -91,6 +91,11 @@ mvn test || exit 1
 /bin/echo "Releasing version '$release'"
 sleep 3
 
+# remove the local and remote tag if any
+tag="$LIBRARY-$release"
+git tag -d $tag 2> /dev/null
+git push --delete origin $tag 2> /dev/null
+
 #############################################################
 # releasing to sonatype
 
@@ -101,8 +106,8 @@ read cont
 if [ "$cont" = "" -o "$cont" = "y" ]; then
     cd $LOCAL_DIR
     mvn -P st release:clean || exit 1
-    mvn -P st release:prepare || exit 1
-    mvn -P st release:perform || exit 1
+    mvn -P st release:prepare || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
+    mvn -P st release:perform || ( /bin/echo "Maybe use mvn release:rollback to rollback"; exit 1 )
 
     /bin/echo ""
     /bin/echo ""
