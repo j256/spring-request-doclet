@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.j256.spring-request-doclet</groupId>
 	<artifactId>spring-request-doclet</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1</version>
 	<packaging>jar</packaging>
 	<name>Spring Request Doclet</name>
 	<url>https://256stuff.com/sources/spring-request-doclet/</url>
@@ -21,7 +21,7 @@
 		<version>5</version>
 	</parent>
 	<properties>
-		<disableDoclint></disableDoclint>
+		<disableDoclint />
 		<sun.tools-version>1.6.0</sun.tools-version>
 		<!-- test dependency versions -->
 		<easymock-version>3.4</easymock-version>
