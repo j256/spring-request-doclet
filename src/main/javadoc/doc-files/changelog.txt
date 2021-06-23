@@ -1,22 +1,22 @@
-1.1 : 6/23/2021
+1.1: 6/23/2021
 	* Just bumped the release since the 0 looks like it is in beta.
 
-0.6 : 1/30/2017
+0.6: 1/30/2017
 	* Added the ability to copy generic documentation based on the -r param to the doclet.
 
-0.5 : 1/23/2017
+0.5: 1/23/2017
 	* Fixed a NPE
 
-0.4 : 12/8/2016
+0.4: 12/8/2016
 	* Handling of array and return params.
 	* Fixed bug with multiple methods with the same name.
 	* Added support for extracting @return information for @ResponseBody
 	* Improved some of the javadoc output.
 
-0.3 : 12/7/2016
+0.3: 12/7/2016
 	* Added @RequestBody handling.
 	* Added @ResponseBody information.
 	* Revamped the output to have a per method description file.
 
-0.2 : 11/30/2016
+0.2: 11/30/2016
 	* Initial public release.
