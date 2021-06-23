@@ -7,14 +7,30 @@ LIBRARY="spring-request-doclet"
 LOCAL_DIR="$HOME/svn/local/$LIBRARY"
 
 #############################################################
-# check for not commited files:
+# check initial stuff
+
+bad=0
+
+git status | head -1 | fgrep master > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    /bin/echo "Should be on master branch."
+    git status | head -1
+    bad=1
+fi
+
+head -1 src/main/javadoc/doc-files/changelog.txt | fgrep '?' > /dev/null 2>&1
+if [ $? -ne 1 ]; then
+    /bin/echo "No question-marks (?) can be in the ChangeLog top line."
+    head -1 src/main/javadoc/doc-files/changelog.txt
+    bad=1
+fi
 
 cd $LOCAL_DIR
 git status | grep 'nothing to commit'
 if [ $? -ne 0 ]; then
-	/bin/echo "Files not checked-in"
-	git status
-	exit 1
+    /bin/echo "Files not checked-in"
+    git status
+    bad=1
 fi
 
 #############################################################
@@ -23,7 +39,7 @@ fi
 grep sonatype-nexus-snapshots $HOME/.m2/settings.xml > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     /bin/echo "Can't find sonatype info in the maven settings.xml file"
-    exit 1
+    bad=1
 fi
 
 #############################################################
@@ -41,27 +57,32 @@ if [ "$rel" != "" ]; then
 fi
 
 #############################################################
+# check docs:
+
+cd $LOCAL_DIR
+ver=$(head -1 src/main/javadoc/doc-files/changelog.txt | cut -f1 -d:)
+if [ "$release" != "$ver" ]; then
+    /bin/echo "Change log top line version seems wrong:"
+    head -1 src/main/javadoc/doc-files/changelog.txt
+    bad=1
+fi
+
+grep -q $release README.md
+if [ $? != 0 ]; then
+    /bin/echo "Could not find $release in README.md"
+    bad=1
+fi
+
+if [ $bad -ne 0 ]; then
+    echo "Please fix the previous error and re-run"
+    exit 1
+fi
+
+#############################################################
 # run tests
 
 cd $LOCAL_DIR
 mvn test || exit 1
-
-#############################################################
-
-/bin/echo ""
-/bin/echo -n "Enter the GPG pass-phrase: "
-read gpgpass
-
-GPG_ARGS="-Darguments=-Dgpg.passphrase=$gpgpass -Dgpg.passphrase=$gpgpass -DgpgPhase=verify"
-
-tmp="/tmp/release.sh.$$.t"
-touch $tmp
-gpg --passphrase $gpgpass -s -u D3412AC1 $tmp > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    /bin/echo "Passphrase incorrect"
-    exit 1
-fi
-rm -f $tmp*
 
 #############################################################
 
@@ -80,8 +101,8 @@ read cont
 if [ "$cont" = "" -o "$cont" = "y" ]; then
     cd $LOCAL_DIR
     mvn -P st release:clean || exit 1
-    mvn $GPG_ARGS -P st release:prepare || exit 1
-    mvn $GPG_ARGS -P st release:perform || exit 1
+    mvn -P st release:prepare || exit 1
+    mvn -P st release:perform || exit 1
 
     /bin/echo ""
     /bin/echo ""

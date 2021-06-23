@@ -1,3 +1,6 @@
+1.1 : 6/23/2021
+	* Just bumped the release since the 0 looks like it is in beta.
+
 0.6 : 1/30/2017
 	* Added the ability to copy generic documentation based on the -r param to the doclet.
 
